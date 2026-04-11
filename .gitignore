@@ -1,0 +1,10 @@
+node_modules/
+
+# Generated at runtime — contain secrets or dynamic config
+.env
+config/auth.json
+config/mediamtx.yml
+config/settings.json
+
+# macOS
+.DS_Store

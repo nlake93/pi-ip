@@ -1,0 +1,22 @@
+{
+  "name": "pi-ip",
+  "version": "1.0.0",
+  "description": "Raspberry Pi IP camera — password-protected web UI and RTSP stream via MediaMTX",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "set-password": "node scripts/set-password.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "js-yaml": "^4.1.0"
+  }
+}

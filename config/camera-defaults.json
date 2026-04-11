@@ -1,0 +1,29 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "idr": 60,
+  "bitrate": 2000000,
+  "profile": "main",
+  "level": "4.1",
+
+  "afMode": "auto",
+  "afRange": "normal",
+  "afSpeed": "normal",
+  "lensPosition": 0.0,
+
+  "exposureMode": "normal",
+  "awbMode": "auto",
+  "brightness": 0.0,
+  "contrast": 1.0,
+  "saturation": 1.0,
+  "sharpness": 1.0,
+  "exposureValue": 0.0,
+
+  "hFlip": false,
+  "vFlip": false,
+  "rotation": 0,
+
+  "textOverlayEnable": false,
+  "textOverlay": "%Y-%m-%d %H:%M:%S"
+}

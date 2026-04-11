@@ -1,0 +1,37 @@
+[Unit]
+Description=pi-ip — Raspberry Pi IP Camera
+Documentation=https://github.com/YOUR_USER/pi-ip
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__NODE_USER__
+WorkingDirectory=__APP_DIR__
+EnvironmentFile=__APP_DIR__/.env
+
+# Limit Node.js heap to 96 MB — sensible ceiling on 512 MB Zero 2W RAM
+ExecStart=/usr/bin/node --max-old-space-size=96 __APP_DIR__/server.js
+
+# Automatic restart on failure
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Contain memory use: Node + MediaMTX together target well under 300 MB
+MemoryMax=300M
+MemorySwapMax=0
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=__APP_DIR__/config
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pi-ip
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,103 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h2>Dashboard</h2>
+    <p class="text-muted">Live preview and stream connection info</p>
+  </div>
+  <div class="stream-status">
+    <% if (streamRunning) { %>
+      <span class="badge badge-live">&#9679; LIVE</span>
+    <% } else { %>
+      <span class="badge badge-offline">&#9679; OFFLINE</span>
+    <% } %>
+  </div>
+</div>
+
+<div class="grid grid-2">
+
+  <%# ── Live Preview ── %>
+  <div class="card card-stream">
+    <div class="card-header">
+      <h3>Live Preview <span class="text-muted text-sm">(HLS)</span></h3>
+    </div>
+    <div class="card-body p-0">
+      <div class="video-wrap">
+        <video id="livePlayer" autoplay muted playsinline controls></video>
+        <div class="video-placeholder" id="videoPlaceholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="3"/><path d="M20.9 12a8.9 8.9 0 1 1-17.8 0 8.9 8.9 0 0 1 17.8 0z"/></svg>
+          <p>Stream loading…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Stream URLs ── %>
+  <div class="card">
+    <div class="card-header"><h3>Stream URLs</h3></div>
+    <div class="card-body">
+      <div class="url-list">
+
+        <div class="url-item">
+          <label>RTSP <span class="text-muted">(VLC, Home Assistant, NVR…)</span></label>
+          <div class="url-copy-row">
+            <code id="url-rtsp"><%= rtspUrl %></code>
+            <button class="btn-copy" data-target="url-rtsp" title="Copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="url-item">
+          <label>HLS <span class="text-muted">(browser, Apple devices)</span></label>
+          <div class="url-copy-row">
+            <code id="url-hls"><%= hlsUrl %></code>
+            <button class="btn-copy" data-target="url-hls" title="Copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="url-item">
+          <label>WebRTC <span class="text-muted">(low-latency browser)</span></label>
+          <div class="url-copy-row">
+            <code id="url-webrtc"><%= webrtcUrl %></code>
+            <button class="btn-copy" data-target="url-webrtc" title="Copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <%# ── Camera Info ── %>
+  <div class="card">
+    <div class="card-header">
+      <h3>Current Settings</h3>
+      <a href="/settings" class="btn btn-sm">Edit</a>
+    </div>
+    <div class="card-body">
+      <table class="info-table">
+        <tr><td>Camera</td><td><strong><%= capabilities.name %><% if (!capabilities.detected) { %> <span class="text-muted text-sm">(not detected)</span><% } %></strong></td></tr>
+        <tr><td>Resolution</td><td><strong><%= settings.width %>&times;<%= settings.height %></strong></td></tr>
+        <tr><td>Framerate</td><td><strong><%= settings.fps %> fps</strong></td></tr>
+        <tr><td>Bitrate</td><td><strong><%= (settings.bitrate / 1_000_000).toFixed(1) %> Mbps</strong></td></tr>
+        <tr><td>H.264 profile</td><td><strong><%= settings.profile.charAt(0).toUpperCase() + settings.profile.slice(1) %></strong></td></tr>
+        <tr><td>AWB</td><td><strong><%= settings.awbMode.charAt(0).toUpperCase() + settings.awbMode.slice(1) %></strong></td></tr>
+        <tr><td>Exposure</td><td><strong><%= settings.exposureMode.charAt(0).toUpperCase() + settings.exposureMode.slice(1) %></strong></td></tr>
+        <tr><td>Flip</td><td><strong><%= settings.hFlip && settings.vFlip ? 'H + V' : settings.hFlip ? 'Horizontal' : settings.vFlip ? 'Vertical' : 'None' %></strong></td></tr>
+        <tr><td>Rotation</td><td><strong><%= settings.rotation %>&deg;</strong></td></tr>
+        <tr><td>Text overlay</td><td><strong><%= settings.textOverlayEnable ? 'On' : 'Off' %></strong></td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  window.PI_IP_HLS_URL = '<%= hlsUrl %>';
+</script>
+
+<%- include('partials/footer', { loadHls: true }) %>

@@ -1,0 +1,279 @@
+<%- include('partials/header') %>
+
+<div class="page-header">
+  <div>
+    <h2>Camera Settings</h2>
+    <p class="text-muted">Changes are applied immediately and restart the stream.</p>
+  </div>
+  <div class="camera-badge">
+    <% if (capabilities.detected) { %>
+      <span class="badge badge-camera">📷 <%= capabilities.name %></span>
+    <% } else { %>
+      <span class="badge badge-offline" title="Connect camera and restart to detect">📷 Not detected</span>
+    <% } %>
+  </div>
+</div>
+
+<% if (saved) { %>
+<div class="alert alert-success">&#10003; Settings saved — stream restarted.</div>
+<% } %>
+<% if (error) { %>
+<div class="alert alert-error">Failed to apply settings. Check that MediaMTX is installed and the camera is connected.</div>
+<% } %>
+
+<form action="/settings" method="POST" class="settings-form">
+
+  <%# ── Video ── %>
+  <div class="card settings-section">
+    <div class="card-header"><h3>Video</h3></div>
+    <div class="card-body">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="resolution">Resolution preset</label>
+          <select id="resolution" name="resolution" data-syncs="width,height">
+            <% [
+              [1920,1080,'1080p (Full HD)'],
+              [1280,720, '720p (HD) — recommended for Zero 2W'],
+              [1024,768, '768p (4:3)'],
+              [800,600,  '600p (4:3)'],
+              [640,480,  '480p (VGA)'],
+            ].filter(([w,h]) => w <= capabilities.maxWidth && h <= capabilities.maxHeight)
+             .forEach(([w,h,label]) => { %>
+            <option value="<%= w %>x<%= h %>"
+              <%= settings.width === w && settings.height === h ? 'selected' : '' %>>
+              <%= w %>&times;<%= h %> — <%= label %>
+            </option>
+            <% }) %>
+          </select>
+          <input type="hidden" id="width"  name="width"  value="<%= settings.width %>">
+          <input type="hidden" id="height" name="height" value="<%= settings.height %>">
+        </div>
+
+        <div class="form-group">
+          <label for="fps">Framerate</label>
+          <select id="fps" name="fps">
+            <% [10,15,24,25,30,50,60].forEach(v => { %>
+            <option value="<%= v %>" <%= settings.fps === v ? 'selected' : '' %>><%= v %> fps</option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="bitrate">Bitrate
+            <span class="text-muted text-sm">(Zero 2W WiFi: keep &le; 6 Mbps)</span>
+          </label>
+          <select id="bitrate" name="bitrate">
+            <% [
+              [500000,  '0.5 Mbps'],
+              [1000000, '1 Mbps'],
+              [2000000, '2 Mbps — recommended'],
+              [4000000, '4 Mbps'],
+              [6000000, '6 Mbps'],
+              [8000000, '8 Mbps'],
+            ].forEach(([v,label]) => { %>
+            <option value="<%= v %>" <%= settings.bitrate === v ? 'selected' : '' %>><%= label %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="profile">H.264 profile</label>
+          <select id="profile" name="profile">
+            <% ['baseline','main','high'].forEach(p => { %>
+            <option value="<%= p %>" <%= settings.profile === p ? 'selected' : '' %>><%= p.charAt(0).toUpperCase()+p.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="level">H.264 level</label>
+          <select id="level" name="level">
+            <% ['4','4.1','4.2'].forEach(l => { %>
+            <option value="<%= l %>" <%= String(settings.level) === l ? 'selected' : '' %>><%= l %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="idr">Keyframe interval <span class="text-muted text-sm">(frames)</span></label>
+          <input type="number" id="idr" name="idr" value="<%= settings.idr %>" min="1" max="300" step="1">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <%# ── Image ── %>
+  <div class="card settings-section">
+    <div class="card-header"><h3>Image</h3></div>
+    <div class="card-body">
+      <div class="form-row">
+
+        <% [
+          ['brightness',    'Brightness',  -1,  1,   0.05, settings.brightness],
+          ['contrast',      'Contrast',     0,  4,   0.05, settings.contrast],
+          ['saturation',    'Saturation',   0,  4,   0.05, settings.saturation],
+          ['sharpness',     'Sharpness',    0,  4,   0.05, settings.sharpness],
+          ['exposureValue', 'Exposure comp (EV)', -8, 8, 0.5, settings.exposureValue],
+        ].forEach(([name, label, min, max, step, val]) => { %>
+        <div class="form-group form-group-slider">
+          <label for="<%= name %>"><%= label %></label>
+          <div class="slider-row">
+            <input type="range" id="<%= name %>" name="<%= name %>"
+              min="<%= min %>" max="<%= max %>" step="<%= step %>" value="<%= val %>">
+            <output for="<%= name %>" class="slider-value"><%= val %></output>
+          </div>
+        </div>
+        <% }) %>
+
+      </div>
+    </div>
+  </div>
+
+  <%# ── Exposure & White Balance ── %>
+  <div class="card settings-section">
+    <div class="card-header"><h3>Exposure &amp; White Balance</h3></div>
+    <div class="card-body">
+      <div class="form-row">
+
+        <div class="form-group">
+          <label for="exposureMode">Exposure mode</label>
+          <select id="exposureMode" name="exposureMode">
+            <% ['normal','short','long','custom'].forEach(m => { %>
+            <option value="<%= m %>" <%= settings.exposureMode === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="awbMode">Auto white balance</label>
+          <select id="awbMode" name="awbMode">
+            <% ['auto','incandescent','tungsten','fluorescent','indoor','daylight','cloudy'].forEach(m => { %>
+            <option value="<%= m %>" <%= settings.awbMode === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <%# ── Focus (autofocus cameras only — hidden for fixed-focus modules) ── %>
+  <% if (capabilities.hasAF) { %>
+  <div class="card settings-section">
+    <div class="card-header"><h3>Focus <span class="text-muted text-sm">(autofocus cameras only)</span></h3></div>
+    <div class="card-body">
+      <div class="form-row">
+
+        <div class="form-group">
+          <label for="afMode">AF mode</label>
+          <select id="afMode" name="afMode">
+            <% ['auto','manual','continuous'].forEach(m => { %>
+            <option value="<%= m %>" <%= settings.afMode === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="afRange">AF range</label>
+          <select id="afRange" name="afRange">
+            <% ['normal','macro','full'].forEach(m => { %>
+            <option value="<%= m %>" <%= settings.afRange === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="afSpeed">AF speed</label>
+          <select id="afSpeed" name="afSpeed">
+            <% ['normal','fast'].forEach(m => { %>
+            <option value="<%= m %>" <%= settings.afSpeed === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-group form-group-slider">
+          <label for="lensPosition">Lens position <span class="text-muted text-sm">(manual AF only)</span></label>
+          <div class="slider-row">
+            <input type="range" id="lensPosition" name="lensPosition"
+              min="0" max="10" step="0.1" value="<%= settings.lensPosition %>">
+            <output for="lensPosition" class="slider-value"><%= settings.lensPosition %></output>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <% } /* end hasAF */ %>
+
+  <%# ── Orientation ── %>
+  <div class="card settings-section">
+    <div class="card-header"><h3>Orientation</h3></div>
+    <div class="card-body">
+      <div class="form-row">
+
+        <div class="form-group form-group-check">
+          <label class="checkbox-label">
+            <input type="checkbox" name="hFlip" <%= settings.hFlip ? 'checked' : '' %>>
+            <span>Horizontal flip</span>
+          </label>
+        </div>
+
+        <div class="form-group form-group-check">
+          <label class="checkbox-label">
+            <input type="checkbox" name="vFlip" <%= settings.vFlip ? 'checked' : '' %>>
+            <span>Vertical flip</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label for="rotation">Rotation</label>
+          <select id="rotation" name="rotation">
+            <option value="0"   <%= settings.rotation === 0   ? 'selected' : '' %>>0&deg;</option>
+            <option value="180" <%= settings.rotation === 180 ? 'selected' : '' %>>180&deg;</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <%# ── Text Overlay ── %>
+  <div class="card settings-section">
+    <div class="card-header"><h3>Text Overlay</h3></div>
+    <div class="card-body">
+      <div class="form-row">
+
+        <div class="form-group form-group-check">
+          <label class="checkbox-label">
+            <input type="checkbox" id="textOverlayEnable" name="textOverlayEnable"
+              <%= settings.textOverlayEnable ? 'checked' : '' %>>
+            <span>Enable text overlay</span>
+          </label>
+        </div>
+
+        <div class="form-group" id="textOverlayGroup">
+          <label for="textOverlay">
+            Overlay text <span class="text-muted text-sm">(strftime format)</span>
+          </label>
+          <input type="text" id="textOverlay" name="textOverlay"
+            value="<%= settings.textOverlay %>"
+            placeholder="%Y-%m-%d %H:%M:%S">
+          <p class="form-hint">Use <code>%Y-%m-%d %H:%M:%S</code> for a date/time stamp.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">Save &amp; restart stream</button>
+    <a href="/" class="btn btn-secondary">Cancel</a>
+  </div>
+
+</form>
+
+<%- include('partials/footer') %>
