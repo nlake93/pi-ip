@@ -130,6 +130,7 @@ pi-ip/
 ├── src/
 │   ├── config.js              # Environment / path config
 │   ├── camera.js              # MediaMTX process + config management
+│   ├── capabilities.js        # Camera sensor detection (libcamera)
 │   ├── middleware/
 │   │   └── requireAuth.js     # Session auth guard
 │   └── routes/

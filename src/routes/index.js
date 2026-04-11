@@ -31,6 +31,8 @@ router.get('/', requireAuth, (req, res) => {
     streamRunning: camera.isRunning(),
     settings,
     capabilities: caps,
+    saved:  req.query.saved === '1',
+    error:  req.query.error || null,
     rtspUrl:    `rtsp://${ip}:${config.rtspPort}/cam`,
     hlsUrl:     `http://${ip}:${config.hlsPort}/cam/index.m3u8`,
     webrtcUrl:  `http://${ip}:${config.webrtcPort}/cam`,

@@ -59,12 +59,7 @@ function buildMediaMTXConfig(s) {
     rpiCameraHFlip:         s.hFlip,
     rpiCameraVFlip:         s.vFlip,
     rpiCameraRotation:      s.rotation,
-    rpiCameraTextOverlayEnable: s.textOverlayEnable,
   };
-
-  if (s.textOverlayEnable) {
-    pathCfg.rpiCameraTextOverlay = s.textOverlay;
-  }
 
   return {
     logLevel:       'info',

@@ -7,18 +7,8 @@ const camera      = require('../camera');
 
 const router = express.Router();
 
-router.get('/', requireAuth, (req, res) => {
-  const settings = camera.getSettings();
-  const caps     = camera.getCapabilities();
-  res.render('settings', {
-    title:        'Settings — pi-ip',
-    currentPage:  'settings',
-    username:     req.session.username,
-    settings,
-    capabilities: caps,
-    saved:  req.query.saved  === '1',
-    error:  req.query.error  || null,
-  });
+router.get('/', requireAuth, (_req, res) => {
+  res.redirect('/');
 });
 
 router.post('/', requireAuth, async (req, res) => {
@@ -51,15 +41,13 @@ router.post('/', requireAuth, async (req, res) => {
       vFlip:    b.vFlip === 'on',
       rotation: parseInt(b.rotation, 10),
 
-      textOverlayEnable: b.textOverlayEnable === 'on',
-      textOverlay:       b.textOverlay || '%Y-%m-%d %H:%M:%S',
     };
 
     await camera.applySettings(settings);
-    res.redirect('/settings?saved=1');
+    res.redirect('/?saved=1');
   } catch (err) {
     console.error('[settings] Failed to apply settings:', err);
-    res.redirect('/settings?error=apply');
+    res.redirect('/?error=apply');
   }
 });
 

@@ -60,6 +60,29 @@ document.querySelectorAll('input[type="range"]').forEach((slider) => {
   slider.addEventListener('input', () => { output.textContent = slider.value; });
 });
 
+// Keep slider outputs in sync when the form is reset
+const settingsForm = document.getElementById('settingsForm');
+if (settingsForm) {
+  settingsForm.addEventListener('reset', () => {
+    // rAF so the browser has already restored default values before we read them
+    requestAnimationFrame(() => {
+      settingsForm.querySelectorAll('input[type="range"]').forEach((slider) => {
+        const output = settingsForm.querySelector(`output[for="${slider.id}"]`);
+        if (output) output.textContent = slider.value;
+      });
+      // Sync hidden width/height back from the resolution preset's reset value
+      const res = settingsForm.querySelector('#resolution');
+      if (res) {
+        const [w, h] = res.value.split('x').map(Number);
+        const wInput = settingsForm.querySelector('#width');
+        const hInput = settingsForm.querySelector('#height');
+        if (wInput) wInput.value = w;
+        if (hInput) hInput.value = h;
+      }
+    });
+  });
+}
+
 // ── Resolution preset → hidden width/height inputs ────────────────────────────
 const resPicker = document.getElementById('resolution');
 if (resPicker) {
@@ -68,16 +91,4 @@ if (resPicker) {
     document.getElementById('width').value  = w;
     document.getElementById('height').value = h;
   });
-}
-
-// ── Text overlay toggle ───────────────────────────────────────────────────────
-const overlayToggle = document.getElementById('textOverlayEnable');
-const overlayGroup  = document.getElementById('textOverlayGroup');
-if (overlayToggle && overlayGroup) {
-  function syncOverlay() {
-    overlayGroup.style.opacity        = overlayToggle.checked ? '1' : '0.4';
-    overlayGroup.style.pointerEvents  = overlayToggle.checked ? '' : 'none';
-  }
-  overlayToggle.addEventListener('change', syncOverlay);
-  syncOverlay();
 }

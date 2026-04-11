@@ -22,8 +22,5 @@
 
   "hFlip": false,
   "vFlip": false,
-  "rotation": 0,
-
-  "textOverlayEnable": false,
-  "textOverlay": "%Y-%m-%d %H:%M:%S"
+  "rotation": 0
 }

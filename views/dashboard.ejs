@@ -3,7 +3,7 @@
 <div class="page-header">
   <div>
     <h2>Dashboard</h2>
-    <p class="text-muted">Live preview and stream connection info</p>
+    <p class="text-muted">Live preview and camera settings</p>
   </div>
   <div class="stream-status">
     <% if (streamRunning) { %>
@@ -11,87 +11,318 @@
     <% } else { %>
       <span class="badge badge-offline">&#9679; OFFLINE</span>
     <% } %>
+    <% if (capabilities.detected) { %>
+      <span class="badge badge-camera">📷 <%= capabilities.name %></span>
+    <% } else { %>
+      <span class="badge badge-offline" title="Connect camera and restart to detect">Camera not detected</span>
+    <% } %>
   </div>
 </div>
 
-<div class="grid grid-2">
+<% if (saved) { %>
+<div class="alert alert-success">&#10003; Settings saved — stream restarted.</div>
+<% } %>
+<% if (error) { %>
+<div class="alert alert-error">Failed to apply settings. Check that MediaMTX is installed and the camera is connected.</div>
+<% } %>
 
-  <%# ── Live Preview ── %>
-  <div class="card card-stream">
-    <div class="card-header">
-      <h3>Live Preview <span class="text-muted text-sm">(HLS)</span></h3>
-    </div>
-    <div class="card-body p-0">
-      <div class="video-wrap">
-        <video id="livePlayer" autoplay muted playsinline controls></video>
-        <div class="video-placeholder" id="videoPlaceholder">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="3"/><path d="M20.9 12a8.9 8.9 0 1 1-17.8 0 8.9 8.9 0 0 1 17.8 0z"/></svg>
-          <p>Stream loading…</p>
+<div class="dashboard-layout">
+
+  <%# ══ LEFT — stream preview + URLs (sticky) ══ %>
+  <div class="dashboard-left">
+
+    <div class="card card-stream">
+      <div class="card-header">
+        <h3>Live Preview <span class="text-muted text-sm">(HLS)</span></h3>
+      </div>
+      <div class="card-body p-0">
+        <div class="video-wrap">
+          <video id="livePlayer" autoplay muted playsinline controls></video>
+          <div class="video-placeholder" id="videoPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="3"/><path d="M20.9 12a8.9 8.9 0 1 1-17.8 0 8.9 8.9 0 0 1 17.8 0z"/></svg>
+            <p>Stream loading…</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <%# ── Stream URLs ── %>
-  <div class="card">
-    <div class="card-header"><h3>Stream URLs</h3></div>
-    <div class="card-body">
-      <div class="url-list">
+    <div class="card" style="margin-top:1.25rem">
+      <div class="card-header"><h3>Stream URLs</h3></div>
+      <div class="card-body">
+        <div class="url-list">
 
-        <div class="url-item">
-          <label>RTSP <span class="text-muted">(VLC, Home Assistant, NVR…)</span></label>
-          <div class="url-copy-row">
-            <code id="url-rtsp"><%= rtspUrl %></code>
-            <button class="btn-copy" data-target="url-rtsp" title="Copy">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
+          <div class="url-item">
+            <label>RTSP <span class="text-muted">(VLC, Home Assistant, NVR…)</span></label>
+            <div class="url-copy-row">
+              <code id="url-rtsp"><%= rtspUrl %></code>
+              <button class="btn-copy" data-target="url-rtsp" title="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div class="url-item">
-          <label>HLS <span class="text-muted">(browser, Apple devices)</span></label>
-          <div class="url-copy-row">
-            <code id="url-hls"><%= hlsUrl %></code>
-            <button class="btn-copy" data-target="url-hls" title="Copy">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
+          <div class="url-item">
+            <label>HLS <span class="text-muted">(browser, Apple devices)</span></label>
+            <div class="url-copy-row">
+              <code id="url-hls"><%= hlsUrl %></code>
+              <button class="btn-copy" data-target="url-hls" title="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div class="url-item">
-          <label>WebRTC <span class="text-muted">(low-latency browser)</span></label>
-          <div class="url-copy-row">
-            <code id="url-webrtc"><%= webrtcUrl %></code>
-            <button class="btn-copy" data-target="url-webrtc" title="Copy">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            </button>
+          <div class="url-item">
+            <label>WebRTC <span class="text-muted">(low-latency browser)</span></label>
+            <div class="url-copy-row">
+              <code id="url-webrtc"><%= webrtcUrl %></code>
+              <button class="btn-copy" data-target="url-webrtc" title="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </div>
+
   </div>
 
-  <%# ── Camera Info ── %>
-  <div class="card">
-    <div class="card-header">
-      <h3>Current Settings</h3>
-      <a href="/settings" class="btn btn-sm">Edit</a>
-    </div>
-    <div class="card-body">
-      <table class="info-table">
-        <tr><td>Camera</td><td><strong><%= capabilities.name %><% if (!capabilities.detected) { %> <span class="text-muted text-sm">(not detected)</span><% } %></strong></td></tr>
-        <tr><td>Resolution</td><td><strong><%= settings.width %>&times;<%= settings.height %></strong></td></tr>
-        <tr><td>Framerate</td><td><strong><%= settings.fps %> fps</strong></td></tr>
-        <tr><td>Bitrate</td><td><strong><%= (settings.bitrate / 1_000_000).toFixed(1) %> Mbps</strong></td></tr>
-        <tr><td>H.264 profile</td><td><strong><%= settings.profile.charAt(0).toUpperCase() + settings.profile.slice(1) %></strong></td></tr>
-        <tr><td>AWB</td><td><strong><%= settings.awbMode.charAt(0).toUpperCase() + settings.awbMode.slice(1) %></strong></td></tr>
-        <tr><td>Exposure</td><td><strong><%= settings.exposureMode.charAt(0).toUpperCase() + settings.exposureMode.slice(1) %></strong></td></tr>
-        <tr><td>Flip</td><td><strong><%= settings.hFlip && settings.vFlip ? 'H + V' : settings.hFlip ? 'Horizontal' : settings.vFlip ? 'Vertical' : 'None' %></strong></td></tr>
-        <tr><td>Rotation</td><td><strong><%= settings.rotation %>&deg;</strong></td></tr>
-        <tr><td>Text overlay</td><td><strong><%= settings.textOverlayEnable ? 'On' : 'Off' %></strong></td></tr>
-      </table>
-    </div>
+  <%# ══ RIGHT — camera settings (scrolls) ══ %>
+  <div class="dashboard-right">
+    <form action="/settings" method="POST" class="settings-form" id="settingsForm">
+
+      <div class="settings-heading">
+        <h3>Camera Settings</h3>
+        <p class="text-muted">Changes restart the stream immediately.</p>
+      </div>
+
+      <div class="settings-grid">
+
+      <%# ── Video ── %>
+      <div class="card settings-section settings-card-full">
+        <div class="card-header"><h3>Video</h3></div>
+        <div class="card-body">
+
+          <div class="form-row form-row-3col">
+            <div class="form-group">
+              <label for="resolution">Resolution preset</label>
+              <select id="resolution" name="resolution">
+                <% [
+                  [1920,1080,'1080p (Full HD)'],
+                  [1280,720, '720p (HD)'],
+                  [1024,768, '768p (4:3)'],
+                  [800,600,  '600p (4:3)'],
+                  [640,480,  '480p (VGA)'],
+                ].filter(([w,h]) => w <= capabilities.maxWidth && h <= capabilities.maxHeight)
+                 .forEach(([w,h,label]) => { %>
+                <option value="<%= w %>x<%= h %>"
+                  <%= settings.width === w && settings.height === h ? 'selected' : '' %>>
+                  <%= w %>&times;<%= h %> — <%= label %>
+                </option>
+                <% }) %>
+              </select>
+              <input type="hidden" id="width"  name="width"  value="<%= settings.width %>">
+              <input type="hidden" id="height" name="height" value="<%= settings.height %>">
+            </div>
+
+            <div class="form-group">
+              <label for="fps">Framerate</label>
+              <select id="fps" name="fps">
+                <% [10,15,24,25,30,50,60].forEach(v => { %>
+                <option value="<%= v %>" <%= settings.fps === v ? 'selected' : '' %>><%= v %> fps</option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="bitrate">Bitrate</label>
+              <select id="bitrate" name="bitrate">
+                <% [
+                  [500000,  '0.5 Mbps'],
+                  [1000000, '1 Mbps'],
+                  [2000000, '2 Mbps'],
+                  [4000000, '4 Mbps'],
+                  [6000000, '6 Mbps'],
+                  [8000000, '8 Mbps'],
+                ].forEach(([v,label]) => { %>
+                <option value="<%= v %>" <%= settings.bitrate === v ? 'selected' : '' %>><%= label %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="profile">H.264 profile</label>
+              <select id="profile" name="profile">
+                <% ['baseline','main','high'].forEach(p => { %>
+                <option value="<%= p %>" <%= settings.profile === p ? 'selected' : '' %>><%= p.charAt(0).toUpperCase()+p.slice(1) %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="level">H.264 level</label>
+              <select id="level" name="level">
+                <% ['4','4.1','4.2'].forEach(l => { %>
+                <option value="<%= l %>" <%= String(settings.level) === l ? 'selected' : '' %>><%= l %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="idr">Keyframe interval <span class="text-muted text-sm">(frames)</span></label>
+              <input type="number" id="idr" name="idr" value="<%= settings.idr %>" min="1" max="300" step="1">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <%# ── Image ── %>
+      <div class="card settings-section">
+        <div class="card-header"><h3>Image</h3></div>
+        <div class="card-body">
+          <div class="form-row">
+
+            <% [
+              ['brightness',    'Brightness',        -1, 1,   0.05, settings.brightness],
+              ['contrast',      'Contrast',           0, 4,   0.05, settings.contrast],
+              ['saturation',    'Saturation',         0, 4,   0.05, settings.saturation],
+              ['sharpness',     'Sharpness',          0, 4,   0.05, settings.sharpness],
+              ['exposureValue', 'Exposure comp (EV)', -8, 8,  0.5,  settings.exposureValue],
+            ].forEach(([name, label, min, max, step, val]) => { %>
+            <div class="form-group form-group-slider">
+              <label for="<%= name %>"><%= label %></label>
+              <div class="slider-row">
+                <input type="range" id="<%= name %>" name="<%= name %>"
+                  min="<%= min %>" max="<%= max %>" step="<%= step %>" value="<%= val %>">
+                <output for="<%= name %>" class="slider-value"><%= val %></output>
+              </div>
+            </div>
+            <% }) %>
+
+          </div>
+        </div>
+      </div>
+
+      <%# ── Exposure & WB + Orientation stacked in one column ── %>
+      <div class="settings-stack">
+
+        <div class="card settings-section">
+          <div class="card-header"><h3>Exposure &amp; White Balance</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+
+              <div class="form-group">
+                <label for="exposureMode">Exposure mode</label>
+                <select id="exposureMode" name="exposureMode">
+                  <% ['normal','short','long','custom'].forEach(m => { %>
+                  <option value="<%= m %>" <%= settings.exposureMode === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="awbMode">Auto white balance</label>
+                <select id="awbMode" name="awbMode">
+                  <% ['auto','incandescent','tungsten','fluorescent','indoor','daylight','cloudy'].forEach(m => { %>
+                  <option value="<%= m %>" <%= settings.awbMode === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+                  <% }) %>
+                </select>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="card settings-section">
+          <div class="card-header"><h3>Orientation</h3></div>
+          <div class="card-body">
+            <div class="form-row">
+
+              <div class="form-group form-group-check">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="hFlip" <%= settings.hFlip ? 'checked' : '' %>>
+                  <span>Horizontal flip</span>
+                </label>
+              </div>
+
+              <div class="form-group form-group-check">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="vFlip" <%= settings.vFlip ? 'checked' : '' %>>
+                  <span>Vertical flip</span>
+                </label>
+              </div>
+
+              <div class="form-group">
+                <label for="rotation">Rotation</label>
+                <select id="rotation" name="rotation">
+                  <option value="0"   <%= settings.rotation === 0   ? 'selected' : '' %>>0&deg;</option>
+                  <option value="180" <%= settings.rotation === 180 ? 'selected' : '' %>>180&deg;</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div><%# /settings-stack %>
+
+      <%# ── Focus (autofocus cameras only) ── %>
+      <% if (capabilities.hasAF) { %>
+      <div class="card settings-section settings-card-full">
+        <div class="card-header"><h3>Focus</h3></div>
+        <div class="card-body">
+          <div class="form-row">
+
+            <div class="form-group">
+              <label for="afMode">AF mode</label>
+              <select id="afMode" name="afMode">
+                <% ['auto','manual','continuous'].forEach(m => { %>
+                <option value="<%= m %>" <%= settings.afMode === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="afRange">AF range</label>
+              <select id="afRange" name="afRange">
+                <% ['normal','macro','full'].forEach(m => { %>
+                <option value="<%= m %>" <%= settings.afRange === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="afSpeed">AF speed</label>
+              <select id="afSpeed" name="afSpeed">
+                <% ['normal','fast'].forEach(m => { %>
+                <option value="<%= m %>" <%= settings.afSpeed === m ? 'selected' : '' %>><%= m.charAt(0).toUpperCase()+m.slice(1) %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="form-group form-group-slider">
+              <label for="lensPosition">Lens position <span class="text-muted text-sm">(manual AF only)</span></label>
+              <div class="slider-row">
+                <input type="range" id="lensPosition" name="lensPosition"
+                  min="0" max="10" step="0.1" value="<%= settings.lensPosition %>">
+                <output for="lensPosition" class="slider-value"><%= settings.lensPosition %></output>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      </div><%# /settings-grid %>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save &amp; restart stream</button>
+        <button type="reset"  class="btn btn-secondary">Reset</button>
+      </div>
+
+    </form>
   </div>
 
 </div>
