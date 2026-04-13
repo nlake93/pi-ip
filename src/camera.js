@@ -1,6 +1,6 @@
 'use strict';
 
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const fs   = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
@@ -89,6 +89,11 @@ function spawnMediaMTX() {
     console.warn('[camera] Run scripts/setup.sh on the Pi to install MediaMTX');
     return;
   }
+
+  // Remove stale shared-memory dirs left by previous MediaMTX runs
+  try {
+    execSync('rm -rf /dev/shm/mediamtx-rpicamera-*', { stdio: 'ignore' });
+  } catch { /* non-Linux or already clean */ }
 
   mediamtxProcess = spawn(config.mediamtxBin, [config.mediamtxConfig], {
     stdio: ['ignore', 'pipe', 'pipe'],
