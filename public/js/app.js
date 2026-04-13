@@ -24,18 +24,35 @@
 
   // Prefer native HLS (Safari / iOS); fall back to hls.js
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = hlsUrl;
-    video.addEventListener('canplay', hidePlayerError);
-    video.addEventListener('error', () => showPlayerError('Stream unavailable'));
-    video.play().catch(() => {});
+    function tryNative() {
+      video.src = hlsUrl;
+      video.addEventListener('canplay', hidePlayerError, { once: true });
+      video.addEventListener('error', () => {
+        showPlayerError('Stream restarting…');
+        setTimeout(tryNative, 3000);
+      }, { once: true });
+      video.play().catch(() => {});
+    }
+    tryNative();
   } else if (window.Hls && Hls.isSupported()) {
-    const hls = new Hls({ lowLatencyMode: false });
-    hls.loadSource(hlsUrl);
-    hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => { hidePlayerError(); video.play().catch(() => {}); });
-    hls.on(Hls.Events.ERROR, (_e, data) => {
-      if (data.fatal) showPlayerError('Stream unavailable');
-    });
+    let retryTimer = null;
+
+    function createHls() {
+      const hls = new Hls({ lowLatencyMode: false });
+      hls.loadSource(hlsUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => { hidePlayerError(); video.play().catch(() => {}); });
+      hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (data.fatal) {
+          hls.destroy();
+          showPlayerError('Stream restarting…');
+          retryTimer = setTimeout(createHls, 3000);
+        }
+      });
+      return hls;
+    }
+
+    createHls();
   } else {
     showPlayerError('HLS not supported in this browser');
   }
