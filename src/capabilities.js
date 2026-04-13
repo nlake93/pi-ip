@@ -30,7 +30,7 @@ const UNKNOWN = {
 function detect() {
   const { exec } = require('child_process');
   return new Promise((resolve) => {
-    exec('libcamera-hello --list-cameras 2>&1', { timeout: 6000 }, (err, stdout) => {
+    exec('/usr/bin/libcamera-hello --list-cameras 2>&1', { timeout: 6000 }, (err, stdout) => {
       if (!stdout) {
         console.warn('[camera] libcamera-hello not available — capabilities unknown');
         return resolve(UNKNOWN);
