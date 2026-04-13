@@ -1,6 +1,6 @@
 # pi-ip
 
-A self-contained IP camera appliance for the **Raspberry Pi Zero 2W** (or any Pi with a CSI camera module). Provides:
+A self-contained IP camera appliance for the **Raspberry Pi Zero 2W** (or any Pi with a CSI camera module). Designed to be a lightweight, reliable camera node that can operate standalone or as part of a multi-camera home CCTV system managed by a central hub.
 
 - 🎥 **RTSP stream** — compatible with VLC, Home Assistant, Frigate, Blue Iris, and most NVR software
 - 🌐 **HLS stream** — plays in any browser, Apple TV, iOS
@@ -132,7 +132,8 @@ pi-ip/
 │   ├── camera.js              # MediaMTX process + config management
 │   ├── capabilities.js        # Camera sensor detection (libcamera)
 │   ├── middleware/
-│   │   └── requireAuth.js     # Session auth guard
+│   │   ├── requireAuth.js     # Session auth guard
+│   │   └── csrf.js            # CSRF token middleware
 │   └── routes/
 │       ├── auth.js            # /login, /logout
 │       ├── index.js           # / dashboard
@@ -150,3 +151,26 @@ pi-ip/
 └── systemd/
     └── pi-ip.service          # systemd unit template
 ```
+
+---
+
+## Roadmap
+
+pi-ip is evolving from a standalone camera UI into a managed camera node for a multi-camera home CCTV system. The hub application will serve as the central control point, with each Pi acting as a lightweight, headless camera source.
+
+### Hub Integration
+
+- **JSON API for settings** — `POST /api/settings` to allow the hub to push camera settings remotely, eliminating the need to interact with each Pi's web UI individually.
+- **Status API** — `GET /api/status` returning stream health, uptime, resolution, sensor info, and firmware version as JSON. Enables the hub to monitor all cameras at a glance.
+- **mDNS advertisement** — Broadcast each camera on the local network via Avahi/Bonjour (e.g. `_pi-ip._tcp`) so the hub can auto-discover cameras without manual IP configuration.
+- **Persistent camera identity** — Generate a unique UUID on first boot, stored in config. Allows the hub to reliably track cameras even if their IP address changes due to DHCP.
+- **Headless mode** — Option to disable the local web UI entirely, letting the hub be the single management interface for all cameras.
+
+### Reliability
+
+- **Stream watchdog** — Periodically probe the RTSP port to detect zombie states where MediaMTX is alive but the stream is dead, and trigger an automatic restart.
+- **Network recovery** — Detect Wi-Fi reconnection events and restart the stream if needed, ensuring 24/7 operation without manual intervention.
+
+### Deployment
+
+- **OTA updates** — Allow the hub to push firmware/software updates to all cameras at once, avoiding the need to SSH into each Pi individually. Could be a simple `POST /api/update` that triggers a git pull and service restart.
