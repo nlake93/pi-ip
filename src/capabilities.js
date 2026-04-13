@@ -30,13 +30,13 @@ const UNKNOWN = {
 function detect() {
   const { exec } = require('child_process');
   return new Promise((resolve) => {
-    exec('/usr/bin/libcamera-hello --list-cameras 2>&1', { timeout: 6000 }, (err, stdout) => {
+    exec('/usr/bin/rpicam-hello --list-cameras 2>&1', { timeout: 6000 }, (err, stdout) => {
       if (!stdout) {
-        console.warn('[camera] libcamera-hello not available — capabilities unknown');
+        console.warn('[camera] rpicam-hello not available — capabilities unknown');
         return resolve(UNKNOWN);
       }
       if (err) {
-        console.warn('[camera] libcamera-hello exited with error — attempting to parse output anyway');
+        console.warn('[camera] rpicam-hello exited with error — attempting to parse output anyway');
       }
 
       // Line format: "0 : imx708 [4608x2592] (/base/...)"
