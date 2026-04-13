@@ -25,13 +25,13 @@
   // Prefer native HLS (Safari / iOS); fall back to hls.js
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
     function tryNative() {
-      video.src = hlsUrl;
       video.addEventListener('canplay', hidePlayerError, { once: true });
       video.addEventListener('error', () => {
         showPlayerError('Stream restarting…');
         setTimeout(tryNative, 3000);
       }, { once: true });
-      video.play().catch(() => {});
+      video.src = hlsUrl;
+      video.load();
     }
     tryNative();
   } else if (window.Hls && Hls.isSupported()) {
