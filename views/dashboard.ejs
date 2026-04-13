@@ -80,6 +80,7 @@
   <%# ══ RIGHT — camera settings (scrolls) ══ %>
   <div class="dashboard-right">
     <form action="/settings" method="POST" class="settings-form" id="settingsForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <div class="settings-heading">
         <h3>Camera Settings</h3>

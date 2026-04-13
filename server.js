@@ -8,6 +8,7 @@ const path    = require('path');
 
 const config       = require('./src/config');
 const camera       = require('./src/camera');
+const { csrfToken, csrfVerify } = require('./src/middleware/csrf');
 const authRoutes   = require('./src/routes/auth');
 const indexRoutes  = require('./src/routes/index');
 const settingsRoutes = require('./src/routes/settings');
@@ -31,6 +32,16 @@ app.use(session({
   },
 }));
 
+// CSRF protection for all form POSTs
+app.use(csrfToken);
+app.use(csrfVerify);
+
+// Expose CSRF token to all views
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.session.csrfToken;
+  next();
+});
+
 app.use('/', authRoutes);
 app.use('/', indexRoutes);
 app.use('/settings', settingsRoutes);
@@ -43,11 +54,21 @@ app.use((err, req, res, _next) => {
 
 async function start() {
   await camera.start();
-  app.listen(config.port, '0.0.0.0', () => {
+  const server = app.listen(config.port, '0.0.0.0', () => {
     console.log(`pi-ip web UI  →  http://0.0.0.0:${config.port}`);
     console.log(`RTSP stream   →  rtsp://[PI_IP]:${config.rtspPort}/cam`);
     console.log(`WebRTC        →  http://[PI_IP]:${config.webrtcPort}/cam`);
   });
+
+  // Graceful shutdown — kill MediaMTX before exiting
+  async function shutdown(signal) {
+    console.log(`\n[pi-ip] ${signal} received, shutting down…`);
+    server.close();
+    await camera.stop();
+    process.exit(0);
+  }
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT',  () => shutdown('SIGINT'));
 }
 
 start().catch((err) => {

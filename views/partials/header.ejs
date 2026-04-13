@@ -18,6 +18,7 @@
   <div class="navbar-user">
     <span class="navbar-username"><%= username %></span>
     <form action="/logout" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button type="submit" class="btn-logout">Sign out</button>
     </form>
   </div>

@@ -161,4 +161,8 @@ function getCapabilities() {
   return cachedCapabilities;
 }
 
-module.exports = { start, applySettings, getSettings, saveSettings, isRunning, getCapabilities };
+async function stop() {
+  await killMediaMTX();
+}
+
+module.exports = { start, stop, applySettings, getSettings, saveSettings, isRunning, getCapabilities };
