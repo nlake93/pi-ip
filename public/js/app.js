@@ -25,15 +25,21 @@
   // Prefer native HLS (Safari / iOS); fall back to hls.js
   if (video.canPlayType('application/vnd.apple.mpegurl')) {
     function tryNative() {
-      video.addEventListener('canplay', hidePlayerError, { once: true });
-      video.addEventListener('error', () => {
+      function onCanPlay() {
+        video.removeEventListener('canplay', onCanPlay);
+        video.removeEventListener('error',   onError);
+        hidePlayerError();
+      }
+      function onError() {
+        video.removeEventListener('canplay', onCanPlay);
+        video.removeEventListener('error',   onError);
         showPlayerError('Stream restarting…');
-        video.removeAttribute('src');
-        video.load();
         setTimeout(tryNative, 3000);
-      }, { once: true });
-      video.src = hlsUrl;
-      video.load();
+      }
+      video.addEventListener('canplay', onCanPlay);
+      video.addEventListener('error',   onError);
+      // Cache-bust each attempt so Safari never serves a stale 404
+      video.src = hlsUrl + '?_t=' + Date.now();
     }
     tryNative();
   } else if (window.Hls && Hls.isSupported()) {
