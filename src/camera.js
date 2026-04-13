@@ -111,12 +111,12 @@ function spawnMediaMTX() {
 async function killMediaMTX() {
   if (!mediamtxProcess) return;
   return new Promise((resolve) => {
-    mediamtxProcess.once('exit', resolve);
-    mediamtxProcess.removeAllListeners('exit'); // suppress auto-restart
-    mediamtxProcess.kill('SIGTERM');
+    const proc = mediamtxProcess;
     mediamtxProcess = null;
-    // Ensure resolve is called even if 'exit' fires before we attach
-    setTimeout(resolve, 1500);
+    proc.removeAllListeners('exit'); // remove auto-restart listener first
+    proc.once('exit', resolve);      // then add our resolve listener
+    proc.kill('SIGTERM');
+    setTimeout(resolve, 3000);       // fallback in case exit event doesn't fire
   });
 }
 
