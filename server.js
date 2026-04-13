@@ -53,7 +53,6 @@ async function start() {
   app.listen(config.port, '0.0.0.0', () => {
     console.log(`pi-ip web UI  →  http://0.0.0.0:${config.port}`);
     console.log(`RTSP stream   →  rtsp://[PI_IP]:${config.rtspPort}/cam`);
-    console.log(`HLS stream    →  http://[PI_IP]:${config.hlsPort}/cam/index.m3u8`);
     console.log(`WebRTC        →  http://[PI_IP]:${config.webrtcPort}/cam`);
   });
 }

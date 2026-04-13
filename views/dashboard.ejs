@@ -33,7 +33,7 @@
 
     <div class="card card-stream">
       <div class="card-header">
-        <h3>Live Preview <span class="text-muted text-sm">(HLS)</span></h3>
+        <h3>Live Preview <span class="text-muted text-sm">(WebRTC)</span></h3>
       </div>
       <div class="card-body p-0">
         <div class="video-wrap">
@@ -56,16 +56,6 @@
             <div class="url-copy-row">
               <code id="url-rtsp"><%= rtspUrl %></code>
               <button class="btn-copy" data-target="url-rtsp" title="Copy">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="url-item">
-            <label>HLS <span class="text-muted">(browser, Apple devices)</span></label>
-            <div class="url-copy-row">
-              <code id="url-hls"><%= hlsUrl %></code>
-              <button class="btn-copy" data-target="url-hls" title="Copy">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               </button>
             </div>
@@ -328,7 +318,7 @@
 </div>
 
 <script>
-  window.PI_IP_HLS_URL = '<%= hlsUrl %>';
+  window.PI_IP_WEBRTC_URL = '<%= webrtcUrl %>';
 </script>
 
-<%- include('partials/footer', { loadHls: true }) %>
+<%- include('partials/footer') %>
