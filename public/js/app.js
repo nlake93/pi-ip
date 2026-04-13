@@ -1,5 +1,10 @@
 'use strict';
 
+// ── Auto-dismiss alerts ───────────────────────────────────────────────────────
+document.querySelectorAll('.alert').forEach((el) => {
+  setTimeout(() => { el.style.transition = 'opacity 0.4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 10000);
+});
+
 // ── WebRTC live preview (WHEP) ────────────────────────────────────────────────
 (function initPlayer() {
   const video       = document.getElementById('livePlayer');
@@ -84,17 +89,23 @@
   startWebRTC();
 }());
 
-// ── Copy-to-clipboard buttons ─────────────────────────────────────────────────
-document.querySelectorAll('.btn-copy').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const target = document.getElementById(btn.dataset.target);
-    if (!target) return;
-    navigator.clipboard.writeText(target.textContent.trim()).then(() => {
-      btn.classList.add('copied');
-      setTimeout(() => btn.classList.remove('copied'), 1500);
+// ── Copy-to-clipboard buttons (secure contexts only) ──────────────────────────
+if (window.isSecureContext) {
+  document.querySelectorAll('.btn-copy').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById(btn.dataset.target);
+      if (!target) return;
+      navigator.clipboard.writeText(target.textContent.trim()).then(() => {
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 1500);
+      });
     });
   });
-});
+} else {
+  document.querySelectorAll('.btn-copy').forEach((btn) => {
+    btn.style.display = 'none';
+  });
+}
 
 // ── Range slider live value display ──────────────────────────────────────────
 document.querySelectorAll('input[type="range"]').forEach((slider) => {
