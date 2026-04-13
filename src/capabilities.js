@@ -40,7 +40,7 @@ function detect() {
       }
 
       // Line format: "0 : imx708 [4608x2592] (/base/...)"
-      const match = stdout.match(/:\s+([a-zA-Z0-9_]+)\s+\[(\d+)x(\d+)\]/);
+      const match = stdout.match(/:\s+([a-zA-Z0-9_]+)\s+\[(\d+)x(\d+)/);
       if (!match) {
         console.warn('[camera] Could not parse camera list output:', stdout.trim());
         return resolve(UNKNOWN);
