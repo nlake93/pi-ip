@@ -92,6 +92,7 @@ function spawnMediaMTX() {
 
   mediamtxProcess = spawn(config.mediamtxBin, [config.mediamtxConfig], {
     stdio: ['ignore', 'pipe', 'pipe'],
+    detached: true,
   });
 
   mediamtxProcess.stdout.on('data', (d) => process.stdout.write(`[mediamtx] ${d}`));
@@ -113,10 +114,14 @@ async function killMediaMTX() {
   return new Promise((resolve) => {
     const proc = mediamtxProcess;
     mediamtxProcess = null;
-    proc.removeAllListeners('exit'); // remove auto-restart listener first
-    proc.once('exit', resolve);      // then add our resolve listener
-    proc.kill('SIGTERM');
-    setTimeout(resolve, 3000);       // fallback in case exit event doesn't fire
+    proc.removeAllListeners('exit');
+    proc.once('exit', resolve);
+    try {
+      process.kill(-proc.pid, 'SIGTERM'); // kill mediamtx + its children (mtxrpicam)
+    } catch {
+      return resolve(); // already dead
+    }
+    setTimeout(resolve, 3000);
   });
 }
 
