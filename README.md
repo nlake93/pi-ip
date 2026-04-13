@@ -67,9 +67,9 @@ Once setup is complete, replace `PI_IP` with your Pi's IP address (shown at the 
 | Interface | URL |
 |-----------|-----|
 | Web UI    | `http://PI_IP:8080` |
-| RTSP      | `rtsp://PI_IP:8554/cam` |
-| HLS       | `http://PI_IP:8888/cam/index.m3u8` |
-| WebRTC    | `http://PI_IP:8889/cam` |
+| RTSP      | `rtsp://PI_IP:8554/live` |
+| HLS       | `http://PI_IP:8888/live/index.m3u8` |
+| WebRTC    | `http://PI_IP:8889/live` |
 
 ---
 

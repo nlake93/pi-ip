@@ -56,8 +56,8 @@ async function start() {
   await camera.start();
   const server = app.listen(config.port, '0.0.0.0', () => {
     console.log(`pi-ip web UI  →  http://0.0.0.0:${config.port}`);
-    console.log(`RTSP stream   →  rtsp://[PI_IP]:${config.rtspPort}/cam`);
-    console.log(`WebRTC        →  http://[PI_IP]:${config.webrtcPort}/cam`);
+    console.log(`RTSP stream   →  rtsp://[PI_IP]:${config.rtspPort}/live`);
+    console.log(`WebRTC        →  http://[PI_IP]:${config.webrtcPort}/live`);
   });
 
   // Graceful shutdown — kill MediaMTX before exiting

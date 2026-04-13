@@ -249,8 +249,9 @@ code {
 /* ── Stream URLs ─────────────────────────────────────────── */
 .url-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  justify-items: center;
 }
 .url-item { display: flex; flex-direction: column; }
 .url-item label { display: block; font-size: .8rem; color: var(--text-muted); margin-bottom: .3rem; }

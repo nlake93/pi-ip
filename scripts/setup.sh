@@ -72,7 +72,7 @@ sudo systemctl restart pi-ip.service
 echo ""
 echo "  ✓ pi-ip is running!"
 echo "  Web UI  →  http://$(hostname -I | awk '{print $1}'):8080"
-echo "  RTSP    →  rtsp://$(hostname -I | awk '{print $1}'):8554/cam"
+echo "  RTSP    →  rtsp://$(hostname -I | awk '{print $1}'):8554/live"
 echo ""
 echo "  Manage the service:"
 echo "    sudo systemctl status  pi-ip"

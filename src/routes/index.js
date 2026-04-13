@@ -34,8 +34,8 @@ router.get('/', requireAuth, (req, res) => {
     capabilities:  caps,
     saved:         req.query.saved === '1',
     error:         req.query.error || null,
-    rtspUrl:       `rtsp://${ip}:${config.rtspPort}/cam`,
-    webrtcUrl:     `http://${ip}:${config.webrtcPort}/cam`,
+    rtspUrl:       `rtsp://${ip}:${config.rtspPort}/live`,
+    webrtcUrl:     `http://${ip}:${config.webrtcPort}/live`,
   });
 });
 
@@ -48,7 +48,7 @@ router.post('/api/whep', requireAuth, (req, res) => {
   const proxyReq = http.request({
     hostname: 'localhost',
     port:     config.webrtcPort,
-    path:     '/cam/whep',
+    path:     '/live/whep',
     method:   'POST',
     headers:  { 'Content-Type': 'application/sdp', 'Content-Length': buf.length },
   }, (proxyRes) => {

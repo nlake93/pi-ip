@@ -67,7 +67,7 @@ function buildMediaMTXConfig(s) {
     hlsAddress:     `:${config.hlsPort}`,
     webrtcAddress:  `:${config.webrtcPort}`,
     api:            false,
-    paths: { cam: pathCfg },
+    paths: { live: pathCfg },
   };
 }
 
