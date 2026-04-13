@@ -28,6 +28,8 @@
       video.addEventListener('canplay', hidePlayerError, { once: true });
       video.addEventListener('error', () => {
         showPlayerError('Stream restarting…');
+        video.removeAttribute('src');
+        video.load();
         setTimeout(tryNative, 3000);
       }, { once: true });
       video.src = hlsUrl;
