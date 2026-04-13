@@ -120,13 +120,14 @@ async function killMediaMTX() {
     const proc = mediamtxProcess;
     mediamtxProcess = null;
     proc.removeAllListeners('exit');
-    proc.once('exit', resolve);
+    const timeout = setTimeout(resolve, 3000);
+    proc.once('exit', () => { clearTimeout(timeout); resolve(); });
     try {
-      process.kill(-proc.pid, 'SIGTERM'); // kill mediamtx + its children (mtxrpicam)
+      process.kill(-proc.pid, 'SIGTERM');
     } catch {
-      return resolve(); // already dead
+      clearTimeout(timeout);
+      return resolve();
     }
-    setTimeout(resolve, 3000);
   });
 }
 

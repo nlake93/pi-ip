@@ -7,10 +7,6 @@ const camera      = require('../camera');
 
 const router = express.Router();
 
-router.get('/', requireAuth, (_req, res) => {
-  res.redirect('/');
-});
-
 router.post('/', requireAuth, async (req, res) => {
   try {
     const b = req.body;
@@ -39,8 +35,6 @@ router.post('/', requireAuth, async (req, res) => {
 
       hFlip:    b.hFlip === 'on',
       vFlip:    b.vFlip === 'on',
-      rotation: parseInt(b.rotation, 10),
-
     };
 
     await camera.applySettings(settings);

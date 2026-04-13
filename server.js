@@ -31,13 +31,6 @@ app.use(session({
   },
 }));
 
-// Expose flash messages to every view, then clear them
-app.use((req, res, next) => {
-  res.locals.flash = req.session.flash || null;
-  delete req.session.flash;
-  next();
-});
-
 app.use('/', authRoutes);
 app.use('/', indexRoutes);
 app.use('/settings', settingsRoutes);

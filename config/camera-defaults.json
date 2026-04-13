@@ -21,6 +21,5 @@
   "exposureValue": 0.0,
 
   "hFlip": false,
-  "vFlip": false,
-  "rotation": 0
+  "vFlip": false
 }
