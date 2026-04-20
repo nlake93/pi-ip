@@ -29,7 +29,7 @@ async function main() {
     if (password.length < 8) console.log('  Password too short, try again.');
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  const passwordHash = await bcrypt.hash(password, 8);
   const auth = { username, passwordHash };
 
   fs.mkdirSync(path.dirname(config.authFile), { recursive: true });
