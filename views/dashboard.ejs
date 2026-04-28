@@ -5,18 +5,6 @@
     <h2>Dashboard</h2>
     <p class="text-muted">Live preview and camera settings</p>
   </div>
-  <div class="stream-status">
-    <% if (streamRunning) { %>
-      <span class="badge badge-live">&#9679; LIVE</span>
-    <% } else { %>
-      <span class="badge badge-offline">&#9679; OFFLINE</span>
-    <% } %>
-    <% if (capabilities.detected) { %>
-      <span class="badge badge-camera">📷 <%= capabilities.name %></span>
-    <% } else { %>
-      <span class="badge badge-offline" title="Connect camera and restart to detect">Camera not detected</span>
-    <% } %>
-  </div>
 </div>
 
 <% if (saved) { %>

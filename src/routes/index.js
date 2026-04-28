@@ -26,12 +26,11 @@ router.get('/', requireAuth, (req, res) => {
   const caps     = camera.getCapabilities();
 
   res.render('dashboard', {
-    title:         'Dashboard — pi-ip',
-    currentPage:   'dashboard',
-    username:      req.session.username,
-    streamRunning: camera.isRunning(),
+    title:        'Dashboard — pi-ip',
+    currentPage:  'dashboard',
+    username:     req.session.username,
     settings,
-    capabilities:  caps,
+    capabilities: caps,
     saved:         req.query.saved === '1',
     error:         req.query.error || null,
     rtspUrl:       `rtsp://${ip}:${config.rtspPort}/live`,
