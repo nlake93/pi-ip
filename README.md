@@ -132,7 +132,8 @@ pi-ip/
 │   └── routes/
 │       ├── auth.js            # /login, /logout
 │       ├── index.js           # / dashboard
-│       └── settings.js        # /settings
+│       ├── settings.js        # /settings
+│       └── api.js             # /api/status (hub endpoints)
 ├── views/                     # EJS templates
 ├── public/                    # Static CSS + JS
 ├── config/
@@ -158,7 +159,7 @@ pi-ip is evolving from a standalone camera UI into a managed camera node for a m
 ### Hub Integration
 
 - **JSON API for settings** — `POST /api/settings` to allow the hub to push camera settings remotely, eliminating the need to interact with each Pi's web UI individually.
-- **Status API** — `GET /api/status` returning stream health, uptime, resolution, sensor info, and firmware version as JSON. Enables the hub to monitor all cameras at a glance.
+- ✅ **Status API** — `GET /api/status` returning stream health, uptime, resolution, sensor info, and firmware version as JSON. Enables the hub to monitor all cameras at a glance.
 - ✅ **mDNS advertisement** — Each camera broadcasts `_pi-ip._tcp` via Avahi/Bonjour so the hub can auto-discover cameras without manual IP configuration.
 - ✅ **Persistent camera identity** — A unique UUID is generated on first boot, stored in `config/identity.json`. Allows the hub to reliably track cameras even if their IP address changes due to DHCP.
 - **Headless mode** — Option to disable the local web UI entirely, letting the hub be the single management interface for all cameras.
