@@ -8,6 +8,8 @@ const path    = require('path');
 
 const config       = require('./src/config');
 const camera       = require('./src/camera');
+const identity     = require('./src/identity');
+const mdns         = require('./src/mdns');
 const { csrfToken, csrfVerify } = require('./src/middleware/csrf');
 const authRoutes   = require('./src/routes/auth');
 const indexRoutes  = require('./src/routes/index');
@@ -53,6 +55,8 @@ app.use((err, req, res, _next) => {
 });
 
 async function start() {
+  const id = identity.ensure();
+  mdns.apply(id);
   await camera.start();
   const server = app.listen(config.port, '0.0.0.0', () => {
     console.log(`pi-ip web UI  →  http://0.0.0.0:${config.port}`);

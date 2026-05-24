@@ -18,4 +18,5 @@ module.exports = {
   authFile:       process.env.AUTH_FILE        || path.join(projectRoot, 'config', 'auth.json'),
 
   cameraDefaultsFile: path.join(projectRoot, 'config', 'camera-defaults.json'),
+  identityFile:       process.env.IDENTITY_FILE || path.join(projectRoot, 'config', 'identity.json'),
 };
