@@ -7,6 +7,7 @@ const os      = require('os');
 const requireAuth = require('../middleware/requireAuth');
 const camera      = require('../camera');
 const config      = require('../config');
+const { version } = require('../../package.json');
 
 const router = express.Router();
 
@@ -31,6 +32,7 @@ router.get('/', requireAuth, (req, res) => {
     username:     req.session.username,
     settings,
     capabilities: caps,
+    version,
     saved:         req.query.saved === '1',
     error:         req.query.error || null,
     rtspUrl:       `rtsp://${ip}:${config.rtspPort}/live`,

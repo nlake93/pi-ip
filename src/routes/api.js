@@ -1,6 +1,8 @@
 'use strict';
 
-const express = require('express');
+const express      = require('express');
+const { execSync } = require('child_process');
+const path         = require('path');
 
 const config        = require('../config');
 const camera        = require('../camera');
@@ -8,6 +10,8 @@ const identity      = require('../identity');
 const requireApiKey = require('../middleware/requireApiKey');
 const { validate }  = require('../lib/validateSettings');
 const { version }   = require('../../package.json');
+
+const APP_DIR = path.resolve(__dirname, '../..');
 
 const router = express.Router();
 
@@ -67,6 +71,24 @@ router.post('/settings', requireApiKey, async (req, res) => {
   } catch (err) {
     console.error('[api] Failed to apply settings:', err);
     res.status(500).json({ error: 'Failed to apply settings' });
+  }
+});
+
+/**
+ * POST /api/update
+ *
+ * API key authenticated OTA update for hub-initiated upgrades.
+ * Pulls latest code, reinstalls dependencies, then exits so systemd restarts.
+ */
+router.post('/update', requireApiKey, (req, res) => {
+  try {
+    execSync('git pull --ff-only',           { cwd: APP_DIR, stdio: 'pipe', timeout: 30000 });
+    execSync('npm install --omit=dev',       { cwd: APP_DIR, stdio: 'pipe', timeout: 120000 });
+    res.json({ ok: true });
+    setTimeout(() => process.exit(0), 500);
+  } catch (err) {
+    console.error('[api] OTA update failed:', err.message);
+    res.status(500).json({ error: 'Update failed', detail: err.message });
   }
 });
 

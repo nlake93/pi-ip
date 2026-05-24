@@ -13,8 +13,8 @@ EnvironmentFile=__APP_DIR__/.env
 # Limit Node.js heap to 96 MB — sensible ceiling on 512 MB Zero 2W RAM
 ExecStart=/usr/bin/node --max-old-space-size=96 __APP_DIR__/server.js
 
-# Automatic restart on failure
-Restart=on-failure
+# Restart always so OTA updates (process.exit(0)) trigger a clean reboot of the service
+Restart=always
 RestartSec=5s
 StartLimitIntervalSec=60
 StartLimitBurst=5

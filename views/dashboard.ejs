@@ -63,6 +63,19 @@
       </div>
     </div>
 
+    <div class="card" style="margin-top:1.25rem">
+      <div class="card-header"><h3>Software</h3></div>
+      <div class="card-body">
+        <div id="update-status">
+          <span class="text-muted text-sm">Version <%= version %></span>
+        </div>
+        <div style="margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button id="btn-check-update" class="btn btn-secondary">Check for updates</button>
+          <button id="btn-install-update" class="btn btn-primary" style="display:none">Install update</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <%# ══ RIGHT — camera settings (scrolls) ══ %>
@@ -300,6 +313,66 @@
 
 <script>
   window.PI_IP_WEBRTC_URL = '<%= webrtcUrl %>';
+</script>
+
+<script>
+(function () {
+  const btnCheck   = document.getElementById('btn-check-update');
+  const btnInstall = document.getElementById('btn-install-update');
+  const statusEl   = document.getElementById('update-status');
+
+  btnCheck.addEventListener('click', async () => {
+    btnCheck.disabled = true;
+    btnCheck.textContent = 'Checking…';
+    try {
+      const res  = await fetch('/update/check');
+      const data = await res.json();
+      if (!res.ok) {
+        statusEl.innerHTML = '<span style="color:var(--color-error,#c0392b)">Check failed: ' + (data.detail || data.error) + '</span>';
+        btnInstall.style.display = 'none';
+      } else if (data.upToDate) {
+        statusEl.innerHTML =
+          '<span style="color:var(--color-success,#27ae60)">&#10003; Up to date</span>' +
+          ' <span class="text-muted text-sm">(' + data.current.slice(0, 7) + ')</span>';
+        btnInstall.style.display = 'none';
+      } else {
+        statusEl.innerHTML =
+          '<span style="color:var(--color-warning,#e67e22)">&#8593; Update available</span>' +
+          ' <span class="text-muted text-sm">' + data.current.slice(0, 7) + ' &rarr; ' + data.latest.slice(0, 7) + '</span>';
+        btnInstall.style.display = '';
+      }
+    } catch (e) {
+      statusEl.innerHTML = '<span style="color:var(--color-error,#c0392b)">Check failed &mdash; is the Pi online?</span>';
+    }
+    btnCheck.disabled = false;
+    btnCheck.textContent = 'Check for updates';
+  });
+
+  btnInstall.addEventListener('click', async () => {
+    if (!confirm('Install update and restart the stream? The page will reload automatically.')) return;
+    btnInstall.disabled = true;
+    btnCheck.disabled   = true;
+    btnInstall.textContent = 'Installing…';
+    statusEl.innerHTML = '<span class="text-muted text-sm">Pulling latest code and restarting&hellip;</span>';
+    try {
+      await fetch('/update', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch { /* expected — server exits to restart */ }
+
+    let count = 20;
+    statusEl.innerHTML =
+      '<span class="text-muted text-sm">Restarting&hellip; page reloads in ' +
+      '<span id="ota-countdown">' + count + '</span>s</span>';
+    const timer = setInterval(() => {
+      count--;
+      const el = document.getElementById('ota-countdown');
+      if (el) el.textContent = count;
+      if (count <= 0) { clearInterval(timer); location.reload(); }
+    }, 1000);
+  });
+}());
 </script>
 
 <%- include('partials/footer') %>
