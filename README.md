@@ -7,6 +7,7 @@ A self-contained IP camera appliance for the **Raspberry Pi Zero 2W** (or any Pi
 - ⚡ **WebRTC stream** — ultra-low latency in a browser, served by MediaMTX
 - 🔒 **Password-protected web UI** — adjust all camera settings live
 - 🔄 **Auto-restart** — systemd keeps the stream running; settings changes restart MediaMTX automatically
+- 📡 **mDNS advertisement** — broadcasts `_pi-ip._tcp` via Avahi so the hub can auto-discover cameras
 
 Encoding is handled by the Pi Camera's **hardware H.264 encoder** via MediaMTX's native `rpiCamera` source — the CPU stays mostly free.
 
@@ -31,19 +32,7 @@ Encoding is handled by the Pi Camera's **hardware H.264 encoder** via MediaMTX's
 
 Download and flash **Raspberry Pi OS Trixie (64-bit, Lite)** using [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Enable SSH and configure your Wi-Fi credentials in the imager before writing.
 
-### 2. Enable the camera interface
-
-```bash
-sudo raspi-config
-# Interface Options → Camera → Enable
-```
-
-Or add to `/boot/firmware/config.txt`:
-```
-camera_auto_detect=1
-```
-
-### 3. Clone and run setup
+### 2. Clone and run setup
 
 ```bash
 git clone https://github.com/YOUR_USER/pi-ip.git
@@ -52,11 +41,15 @@ bash scripts/setup.sh
 ```
 
 The setup script:
-1. Installs `libcamera-apps` and Node.js via apt
+1. Installs `libcamera-apps`, Node.js, and `avahi-daemon` via apt
 2. Downloads the MediaMTX `arm64` binary to `/usr/local/bin/mediamtx`
 3. Installs Node.js dependencies (`npm install`)
-4. Prompts you to create admin credentials
-5. Installs and starts a systemd service
+4. Generates a `.env` file with a random `SESSION_SECRET`
+5. Enables the camera interface (`camera_auto_detect=1` in `/boot/firmware/config.txt`)
+6. Generates a persistent device UUID and starts broadcasting via mDNS (`_pi-ip._tcp`)
+7. Prompts you to create admin credentials
+8. Installs the systemd service (enabled for autostart)
+9. Prompts to reboot — the camera requires a reboot to activate
 
 ---
 
@@ -75,10 +68,9 @@ Once setup is complete, replace `PI_IP` with your Pi's IP address (shown at the 
 
 ## Configuration
 
-All runtime configuration lives in a `.env` file in the project root. Copy the example and edit:
+All runtime configuration lives in a `.env` file in the project root. `setup.sh` generates this automatically with a random `SESSION_SECRET`. To customise, edit it directly:
 
 ```bash
-cp .env.example .env
 nano .env
 ```
 
@@ -90,6 +82,7 @@ nano .env
 | `WEBRTC_PORT` | `8889` | WebRTC port |
 | `SESSION_SECRET` | *(random, auto-generated)* | Cookie signing secret |
 | `MEDIAMTX_BIN` | `/usr/local/bin/mediamtx` | Path to the MediaMTX binary |
+| `IDENTITY_FILE` | `config/identity.json` | Path to the device identity file |
 
 Camera settings (resolution, bitrate, exposure, etc.) are managed through the web UI and persisted to `config/settings.json`.
 
@@ -131,6 +124,8 @@ pi-ip/
 │   ├── config.js              # Environment / path config
 │   ├── camera.js              # MediaMTX process + config management
 │   ├── capabilities.js        # Camera sensor detection (libcamera)
+│   ├── identity.js            # Persistent device UUID + name
+│   ├── mdns.js                # Avahi service file generation (mDNS)
 │   ├── middleware/
 │   │   ├── requireAuth.js     # Session auth guard
 │   │   └── csrf.js            # CSRF token middleware
@@ -144,9 +139,11 @@ pi-ip/
 │   ├── camera-defaults.json   # Default camera settings (shipped)
 │   ├── settings.json          # Active settings (runtime, gitignored)
 │   ├── auth.json              # Hashed credentials (runtime, gitignored)
+│   ├── identity.json          # Device UUID + name (runtime, gitignored)
 │   └── mediamtx.yml           # Generated MediaMTX config (runtime, gitignored)
 ├── scripts/
 │   ├── setup.sh               # One-shot Pi setup script
+│   ├── setup-mdns.js          # Generates identity + prints Avahi XML (used by setup.sh)
 │   └── set-password.js        # Interactive credential setter
 └── systemd/
     └── pi-ip.service          # systemd unit template
@@ -162,8 +159,8 @@ pi-ip is evolving from a standalone camera UI into a managed camera node for a m
 
 - **JSON API for settings** — `POST /api/settings` to allow the hub to push camera settings remotely, eliminating the need to interact with each Pi's web UI individually.
 - **Status API** — `GET /api/status` returning stream health, uptime, resolution, sensor info, and firmware version as JSON. Enables the hub to monitor all cameras at a glance.
-- **mDNS advertisement** — Broadcast each camera on the local network via Avahi/Bonjour (e.g. `_pi-ip._tcp`) so the hub can auto-discover cameras without manual IP configuration.
-- **Persistent camera identity** — Generate a unique UUID on first boot, stored in config. Allows the hub to reliably track cameras even if their IP address changes due to DHCP.
+- ✅ **mDNS advertisement** — Each camera broadcasts `_pi-ip._tcp` via Avahi/Bonjour so the hub can auto-discover cameras without manual IP configuration.
+- ✅ **Persistent camera identity** — A unique UUID is generated on first boot, stored in `config/identity.json`. Allows the hub to reliably track cameras even if their IP address changes due to DHCP.
 - **Headless mode** — Option to disable the local web UI entirely, letting the hub be the single management interface for all cameras.
 
 ### Reliability
