@@ -354,12 +354,24 @@
     btnCheck.disabled   = true;
     btnInstall.textContent = 'Installing…';
     statusEl.innerHTML = '<span class="text-muted text-sm">Pulling latest code and restarting&hellip;</span>';
+
+    let updateOk = false;
     try {
-      await fetch('/update', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const res  = await fetch('/update', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        statusEl.innerHTML = '<span style="color:var(--color-error,#c0392b)">Update failed: ' + (data.detail || data.error || res.status) + '</span>';
+        btnInstall.disabled = false;
+        btnCheck.disabled   = false;
+        btnInstall.textContent = 'Install update';
+        return;
+      }
+      updateOk = true;
     } catch { /* expected — server exits to restart */ }
+
+    if (!updateOk) {
+      // Server exited mid-response (normal) — proceed with countdown
+    }
 
     let count = 20;
     statusEl.innerHTML =

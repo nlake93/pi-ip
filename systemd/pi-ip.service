@@ -1,6 +1,6 @@
 [Unit]
 Description=pi-ip — Raspberry Pi IP Camera
-Documentation=https://github.com/YOUR_USER/pi-ip
+Documentation=https://github.com/nlake93/pi-ip
 After=network-online.target
 Wants=network-online.target
 
