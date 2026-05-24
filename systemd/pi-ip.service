@@ -27,7 +27,7 @@ MemorySwapMax=0
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=__APP_DIR__/config /etc/avahi/services
+ReadWritePaths=__APP_DIR__ /etc/avahi/services
 
 StandardOutput=journal
 StandardError=journal
