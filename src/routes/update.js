@@ -15,14 +15,16 @@ function gitExec(cmd) {
 
 /**
  * GET /update/check
- * Session-authenticated. Fetches from origin and compares HEAD to upstream.
+ * Session-authenticated. Queries the remote without writing to disk, then
+ * compares HEAD to the remote branch tip.
  * Returns { upToDate, current, latest }.
  */
 router.get('/check', requireAuth, (req, res) => {
   try {
-    gitExec('git fetch origin');
     const current = gitExec('git rev-parse HEAD');
-    const latest  = gitExec('git rev-parse @{u}');
+    const branch  = gitExec('git rev-parse --abbrev-ref HEAD');
+    const lsLine  = gitExec(`git ls-remote origin refs/heads/${branch}`);
+    const latest  = lsLine.split(/\s+/)[0];
     res.json({ upToDate: current === latest, current, latest });
   } catch (err) {
     res.status(500).json({ error: 'Update check failed', detail: err.message });
