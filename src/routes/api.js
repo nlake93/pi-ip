@@ -2,10 +2,12 @@
 
 const express = require('express');
 
-const config   = require('../config');
-const camera   = require('../camera');
-const identity = require('../identity');
-const { version } = require('../../package.json');
+const config        = require('../config');
+const camera        = require('../camera');
+const identity      = require('../identity');
+const requireApiKey = require('../middleware/requireApiKey');
+const { validate }  = require('../lib/validateSettings');
+const { version }   = require('../../package.json');
 
 const router = express.Router();
 
@@ -43,6 +45,29 @@ router.get('/status', (req, res) => {
       bitrate: settings.bitrate,
     },
   });
+});
+
+/**
+ * POST /api/settings
+ *
+ * Authenticated (Bearer API key) endpoint for the hub to push camera settings.
+ * Accepts a full settings JSON body, validates all fields, and applies them.
+ */
+router.post('/settings', requireApiKey, async (req, res) => {
+  try {
+    const caps   = camera.getCapabilities();
+    const result = validate(req.body, caps);
+
+    if (result.error) {
+      return res.status(400).json({ error: result.error });
+    }
+
+    await camera.applySettings(result.settings);
+    res.json({ ok: true, settings: result.settings });
+  } catch (err) {
+    console.error('[api] Failed to apply settings:', err);
+    res.status(500).json({ error: 'Failed to apply settings' });
+  }
 });
 
 module.exports = router;

@@ -126,14 +126,17 @@ pi-ip/
 │   ├── capabilities.js        # Camera sensor detection (libcamera)
 │   ├── identity.js            # Persistent device UUID + name
 │   ├── mdns.js                # Avahi service file generation (mDNS)
+│   ├── lib/
+│   │   └── validateSettings.js  # Shared settings validation (web UI + API)
 │   ├── middleware/
 │   │   ├── requireAuth.js     # Session auth guard
+│   │   ├── requireApiKey.js   # Bearer API key guard (hub endpoints)
 │   │   └── csrf.js            # CSRF token middleware
 │   └── routes/
 │       ├── auth.js            # /login, /logout
 │       ├── index.js           # / dashboard
 │       ├── settings.js        # /settings
-│       └── api.js             # /api/status (hub endpoints)
+│       ├── api.js             # /api/status, /api/settings (hub endpoints)
 ├── views/                     # EJS templates
 ├── public/                    # Static CSS + JS
 ├── config/
@@ -145,7 +148,8 @@ pi-ip/
 ├── scripts/
 │   ├── setup.sh               # One-shot Pi setup script
 │   ├── setup-mdns.js          # Generates identity + prints Avahi XML (used by setup.sh)
-│   └── set-password.js        # Interactive credential setter
+│   ├── set-password.js        # Interactive credential setter
+│   └── generate-api-key.js   # Generates hub API key, saves to auth.json
 └── systemd/
     └── pi-ip.service          # systemd unit template
 ```
@@ -158,7 +162,7 @@ pi-ip is evolving from a standalone camera UI into a managed camera node for a m
 
 ### Hub Integration
 
-- **JSON API for settings** — `POST /api/settings` to allow the hub to push camera settings remotely, eliminating the need to interact with each Pi's web UI individually.
+- ✅ **JSON API for settings** — `POST /api/settings` authenticated with a Bearer API key, allowing the hub to push camera settings remotely.
 - ✅ **Status API** — `GET /api/status` returning stream health, uptime, resolution, sensor info, and firmware version as JSON. Enables the hub to monitor all cameras at a glance.
 - ✅ **mDNS advertisement** — Each camera broadcasts `_pi-ip._tcp` via Avahi/Bonjour so the hub can auto-discover cameras without manual IP configuration.
 - ✅ **Persistent camera identity** — A unique UUID is generated on first boot, stored in `config/identity.json`. Allows the hub to reliably track cameras even if their IP address changes due to DHCP.

@@ -81,6 +81,10 @@ echo "  mDNS: broadcasting _pi-ip._tcp on the local network"
 echo "[7/8] Setting admin credentials…"
 npm run set-password
 
+echo ""
+echo "  Generating API key for hub integration…"
+npm run api-key
+
 # ── 8. systemd service ────────────────────────────────────────────────────────
 echo "[8/8] Installing systemd service…"
 
