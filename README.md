@@ -35,7 +35,7 @@ Download and flash **Raspberry Pi OS Trixie (64-bit, Lite)** using [Raspberry Pi
 ### 2. Clone and run setup
 
 ```bash
-git clone https://github.com/YOUR_USER/pi-ip.git
+git clone https://github.com/nlake93/pi-ip.git
 cd pi-ip
 bash scripts/setup.sh
 ```
@@ -136,6 +136,7 @@ pi-ip/
 │       ├── auth.js            # /login, /logout
 │       ├── index.js           # / dashboard
 │       ├── settings.js        # /settings
+│       ├── update.js          # /update/check, POST /update (OTA)
 │       ├── api.js             # /api/status, /api/settings (hub endpoints)
 ├── views/                     # EJS templates
 ├── public/                    # Static CSS + JS
@@ -175,4 +176,4 @@ pi-ip is evolving from a standalone camera UI into a managed camera node for a m
 
 ### Deployment
 
-- **OTA updates** — Allow the hub to push firmware/software updates to all cameras at once, avoiding the need to SSH into each Pi individually. Could be a simple `POST /api/update` that triggers a git pull and service restart.
+- ✅ **OTA updates** — `POST /update` triggers a `git pull` and service restart; `GET /update/check` compares local HEAD to the remote branch tip without requiring write access to the git directory.
