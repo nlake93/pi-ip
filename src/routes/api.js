@@ -59,8 +59,10 @@ router.get('/status', (req, res) => {
  */
 router.post('/settings', requireApiKey, async (req, res) => {
   try {
-    const caps   = camera.getCapabilities();
-    const result = validate(req.body, caps);
+    const caps    = camera.getCapabilities();
+    const current = camera.getSettings();
+    const merged  = Object.assign({}, current, req.body);
+    const result  = validate(merged, caps);
 
     if (result.error) {
       return res.status(400).json({ error: result.error });
@@ -82,8 +84,8 @@ router.post('/settings', requireApiKey, async (req, res) => {
  */
 router.post('/update', requireApiKey, (req, res) => {
   try {
-    execSync('git pull --ff-only',           { cwd: APP_DIR, stdio: 'pipe', timeout: 30000 });
-    execSync('npm install --omit=dev',       { cwd: APP_DIR, stdio: 'pipe', timeout: 120000 });
+    execSync('git pull --ff-only',                                              { cwd: APP_DIR, stdio: 'pipe', timeout: 30000 });
+    execSync(`npm install --omit=dev --cache ${path.join(APP_DIR, '.npm-cache')}`, { cwd: APP_DIR, stdio: 'pipe', timeout: 120000 });
     res.json({ ok: true });
     setTimeout(() => process.exit(0), 500);
   } catch (err) {
