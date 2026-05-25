@@ -373,16 +373,8 @@
       // Server exited mid-response (normal) — proceed with countdown
     }
 
-    let count = 20;
-    statusEl.innerHTML =
-      '<span class="text-muted text-sm">Restarting&hellip; page reloads in ' +
-      '<span id="ota-countdown">' + count + '</span>s</span>';
-    const timer = setInterval(() => {
-      count--;
-      const el = document.getElementById('ota-countdown');
-      if (el) el.textContent = count;
-      if (count <= 0) { clearInterval(timer); location.reload(); }
-    }, 1000);
+    statusEl.innerHTML = '<span style="color:var(--color-success,#27ae60)">&#10003; Updated! Page will reload shortly&hellip;</span>';
+    setTimeout(() => location.reload(), 20000);
   });
 }());
 </script>
