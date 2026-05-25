@@ -424,7 +424,7 @@
     btnGen.disabled = true;
     btnGen.textContent = 'Generating…';
     try {
-      const res  = await fetch('/apikey', { method: 'POST' });
+      const res  = await fetch('/apikey', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
       const data = await res.json();
       valueEl.textContent = data.key;
       revealEl.style.display = '';
