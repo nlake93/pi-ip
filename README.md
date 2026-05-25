@@ -117,7 +117,8 @@ To connect a hub to this camera:
 The hub can auto-discover cameras on the local network via mDNS (`_pi-ip._tcp`). Once paired, it can:
 
 - Poll `GET /api/status` for stream health, uptime, resolution, and sensor info
-- Push camera settings via `POST /api/settings` with `Authorization: Bearer <key>`
+- Push camera settings via `POST /api/settings` with `Authorization: Bearer <key>` — only send the fields you want to change, the rest stay as-is
+- Trigger an OTA update via `POST /api/update` with `Authorization: Bearer <key>`
 
 To rotate the key, click **Regenerate key** on the dashboard and update the hub config.
 
