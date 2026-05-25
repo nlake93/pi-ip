@@ -11,9 +11,11 @@ function csrfToken(req, _res, next) {
 }
 
 // Verify the token on state-changing requests. Exempt JSON API routes
-// (same-origin fetch calls that don't use form submission).
+// (same-origin fetch calls that don't use form submission) and all
+// /api/* and /apikey routes (Bearer-authenticated, not session-based).
 function csrfVerify(req, res, next) {
   if (req.method !== 'POST') return next();
+  if (req.path.startsWith('/api/') || req.path.startsWith('/apikey')) return next();
   if (req.is('application/json')) return next();
 
   const token = req.body && req.body._csrf;
