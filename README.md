@@ -8,6 +8,7 @@ A self-contained IP camera appliance for the **Raspberry Pi Zero 2W** (or any Pi
 - 🔒 **Password-protected web UI** — adjust all camera settings live
 - 🔄 **Auto-restart** — systemd keeps the stream running; settings changes restart MediaMTX automatically
 - 📡 **mDNS advertisement** — broadcasts `_pi-ip._tcp` via Avahi so the hub can auto-discover cameras
+- 🆙 **OTA updates** — check for and install updates directly from the dashboard, no SSH required
 
 Encoding is handled by the Pi Camera's **hardware H.264 encoder** via MediaMTX's native `rpiCamera` source — the CPU stays mostly free.
 
@@ -104,6 +105,12 @@ sudo systemctl restart pi-ip
 
 ---
 
+## Software updates
+
+The dashboard has a built-in OTA updater. Click **Check for updates** — if a newer version is available, click **Install update**. The service pulls the latest code, runs `npm install`, and restarts automatically. The page reloads once the service is back up.
+
+---
+
 ## Service management
 
 ```bash
@@ -176,4 +183,4 @@ pi-ip is evolving from a standalone camera UI into a managed camera node for a m
 
 ### Deployment
 
-- ✅ **OTA updates** — `POST /update` triggers a `git pull` and service restart; `GET /update/check` compares local HEAD to the remote branch tip without requiring write access to the git directory.
+- ✅ **OTA updates** — check for and install updates directly from the dashboard; the service pulls the latest code and restarts automatically.
