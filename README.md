@@ -8,6 +8,7 @@ A self-contained IP camera appliance for the **Raspberry Pi Zero 2W** (or any Pi
 - 🔒 **Password-protected web UI** — adjust all camera settings live
 - 🔄 **Auto-restart** — systemd keeps the stream running; settings changes restart MediaMTX automatically
 - 📡 **mDNS advertisement** — broadcasts `_pi-ip._tcp` via Avahi so the hub can auto-discover cameras
+- 🔑 **Hub-ready API** — REST endpoints for status and settings, secured with a Bearer API key managed from the dashboard
 - 🆙 **OTA updates** — check for and install updates directly from the dashboard, no SSH required
 
 Encoding is handled by the Pi Camera's **hardware H.264 encoder** via MediaMTX's native `rpiCamera` source — the CPU stays mostly free.
@@ -105,6 +106,23 @@ sudo systemctl restart pi-ip
 
 ---
 
+## Hub pairing
+
+To connect a hub to this camera:
+
+1. Open the dashboard and go to the **API Key** card
+2. Click **Generate key** — the full key is shown once; copy it immediately
+3. Enter the key in your hub's camera configuration as a Bearer token
+
+The hub can auto-discover cameras on the local network via mDNS (`_pi-ip._tcp`). Once paired, it can:
+
+- Poll `GET /api/status` for stream health, uptime, resolution, and sensor info
+- Push camera settings via `POST /api/settings` with `Authorization: Bearer <key>`
+
+To rotate the key, click **Regenerate key** on the dashboard and update the hub config.
+
+---
+
 ## Software updates
 
 The dashboard has a built-in OTA updater. Click **Check for updates** — if a newer version is available, click **Install update**. The service pulls the latest code, runs `npm install`, and restarts automatically. The page reloads once the service is back up.
@@ -144,6 +162,7 @@ pi-ip/
 │       ├── index.js           # / dashboard
 │       ├── settings.js        # /settings
 │       ├── update.js          # /update/check, POST /update (OTA)
+│       ├── apikey.js          # /apikey — hub API key management
 │       ├── api.js             # /api/status, /api/settings (hub endpoints)
 ├── views/                     # EJS templates
 ├── public/                    # Static CSS + JS
@@ -174,6 +193,7 @@ pi-ip is evolving from a standalone camera UI into a managed camera node for a m
 - ✅ **Status API** — `GET /api/status` returning stream health, uptime, resolution, sensor info, and firmware version as JSON. Enables the hub to monitor all cameras at a glance.
 - ✅ **mDNS advertisement** — Each camera broadcasts `_pi-ip._tcp` via Avahi/Bonjour so the hub can auto-discover cameras without manual IP configuration.
 - ✅ **Persistent camera identity** — A unique UUID is generated on first boot, stored in `config/identity.json`. Allows the hub to reliably track cameras even if their IP address changes due to DHCP.
+- ✅ **API key management** — Generate and rotate the hub API key directly from the dashboard — no SSH required.
 - **Headless mode** — Option to disable the local web UI entirely, letting the hub be the single management interface for all cameras.
 
 ### Reliability
