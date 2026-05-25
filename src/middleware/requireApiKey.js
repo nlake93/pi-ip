@@ -19,7 +19,7 @@ module.exports = function requireApiKey(req, res, next) {
   }
 
   if (!auth.apiKey) {
-    return res.status(503).json({ error: 'API key not set — run: npm run api-key' });
+    return res.status(503).json({ error: 'API key not set — generate one from the dashboard' });
   }
 
   const header = req.headers['authorization'] || '';

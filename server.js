@@ -16,6 +16,7 @@ const indexRoutes    = require('./src/routes/index');
 const settingsRoutes = require('./src/routes/settings');
 const apiRoutes      = require('./src/routes/api');
 const updateRoutes   = require('./src/routes/update');
+const apikeyRoutes   = require('./src/routes/apikey');
 
 const app = express();
 
@@ -51,6 +52,7 @@ app.use('/', indexRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/api', apiRoutes);
 app.use('/update', updateRoutes);
+app.use('/apikey', apikeyRoutes);
 
 // Generic error handler
 app.use((err, req, res, _next) => {

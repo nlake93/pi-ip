@@ -74,6 +74,25 @@
       </div>
     </div>
 
+    <div class="card" style="margin-top:1.25rem">
+      <div class="card-header"><h3>API Key</h3></div>
+      <div class="card-body">
+        <div id="apikey-status" class="text-muted text-sm">Loading…</div>
+        <div id="apikey-reveal" style="display:none;margin-top:0.75rem">
+          <div class="url-copy-row">
+            <code id="apikey-value" style="word-break:break-all"></code>
+            <button class="btn-copy" id="btn-copy-apikey" title="Copy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <p class="text-muted text-sm" style="margin-top:0.5rem">&#9888; Copy this now — it won't be shown again.</p>
+        </div>
+        <div style="margin-top:0.75rem">
+          <button id="btn-generate-apikey" class="btn btn-secondary">Generate key</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <%# ══ RIGHT — camera settings (scrolls) ══ %>
@@ -374,6 +393,58 @@
     statusEl.innerHTML = '<span style="color:var(--color-success,#27ae60)">&#10003; Updated! Page will reload shortly&hellip;</span>';
     setTimeout(() => location.reload(), 20000);
   });
+}());
+
+(function () {
+  const statusEl  = document.getElementById('apikey-status');
+  const revealEl  = document.getElementById('apikey-reveal');
+  const valueEl   = document.getElementById('apikey-value');
+  const btnGen    = document.getElementById('btn-generate-apikey');
+  const btnCopy   = document.getElementById('btn-copy-apikey');
+
+  async function loadStatus() {
+    try {
+      const res  = await fetch('/apikey');
+      const data = await res.json();
+      if (data.hasKey) {
+        statusEl.textContent = 'Key set — preview: ' + data.preview + '••••••••••••••••••••••••';
+        btnGen.textContent = 'Regenerate key';
+      } else {
+        statusEl.textContent = 'No key set.';
+        btnGen.textContent = 'Generate key';
+      }
+    } catch {
+      statusEl.textContent = 'Could not load key status.';
+    }
+  }
+
+  btnGen.addEventListener('click', async () => {
+    if (btnGen.textContent === 'Regenerate key' &&
+        !confirm('This will invalidate the existing key. Any hub using it will need to be updated. Continue?')) return;
+    btnGen.disabled = true;
+    btnGen.textContent = 'Generating…';
+    try {
+      const res  = await fetch('/apikey', { method: 'POST' });
+      const data = await res.json();
+      valueEl.textContent = data.key;
+      revealEl.style.display = '';
+      statusEl.textContent = 'New key generated — copy it now.';
+      btnGen.textContent = 'Regenerate key';
+    } catch {
+      statusEl.textContent = 'Failed to generate key.';
+      btnGen.textContent = 'Generate key';
+    }
+    btnGen.disabled = false;
+  });
+
+  btnCopy.addEventListener('click', () => {
+    navigator.clipboard.writeText(valueEl.textContent).then(() => {
+      btnCopy.title = 'Copied!';
+      setTimeout(() => { btnCopy.title = 'Copy'; }, 2000);
+    });
+  });
+
+  loadStatus();
 }());
 </script>
 
