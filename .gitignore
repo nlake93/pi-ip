@@ -6,5 +6,8 @@ config/auth.json
 config/mediamtx.yml
 config/settings.json
 
+# OTA npm cache
+.npm-cache/
+
 # macOS
 .DS_Store

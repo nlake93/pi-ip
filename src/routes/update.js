@@ -39,8 +39,7 @@ router.get('/check', requireAuth, (req, res) => {
 router.post('/', requireAuth, (req, res) => {
   try {
     gitExec('git pull --ff-only');
-    execSync('mkdir -p /tmp/npm-cache', { stdio: 'pipe' });
-    execSync('npm install --omit=dev --cache /tmp/npm-cache', { cwd: APP_DIR, stdio: 'pipe', timeout: 120000 });
+    execSync(`npm install --omit=dev --cache ${path.join(APP_DIR, '.npm-cache')}`, { cwd: APP_DIR, stdio: 'pipe', timeout: 120000 });
     res.json({ ok: true });
     setTimeout(() => process.exit(0), 500);
   } catch (err) {
