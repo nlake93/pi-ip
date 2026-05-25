@@ -77,7 +77,6 @@
     <div class="card" style="margin-top:1.25rem">
       <div class="card-header"><h3>API Key</h3></div>
       <div class="card-body">
-        <div id="apikey-status" class="text-muted text-sm">Loading…</div>
         <div id="apikey-reveal" style="display:none;margin-top:0.75rem">
           <div class="url-copy-row">
             <code id="apikey-value" style="word-break:break-all"></code>
@@ -396,7 +395,6 @@
 }());
 
 (function () {
-  const statusEl  = document.getElementById('apikey-status');
   const revealEl  = document.getElementById('apikey-reveal');
   const valueEl   = document.getElementById('apikey-value');
   const btnGen    = document.getElementById('btn-generate-apikey');
@@ -406,13 +404,7 @@
     try {
       const res  = await fetch('/apikey');
       const data = await res.json();
-      if (data.hasKey) {
-        statusEl.textContent = 'Key set — preview: ' + data.preview + '••••••••••••••••••••••••';
-        btnGen.textContent = 'Regenerate key';
-      } else {
-        statusEl.textContent = 'No key set.';
-        btnGen.textContent = 'Generate key';
-      }
+      btnGen.textContent = data.hasKey ? 'Regenerate key' : 'Generate key';
     } catch {
       statusEl.textContent = 'Could not load key status.';
     }
@@ -428,10 +420,8 @@
       const data = await res.json();
       valueEl.textContent = data.key;
       revealEl.style.display = '';
-      statusEl.textContent = 'New key generated — copy it now.';
       btnGen.textContent = 'Regenerate key';
     } catch {
-      statusEl.textContent = 'Failed to generate key.';
       btnGen.textContent = 'Generate key';
     }
     btnGen.disabled = false;

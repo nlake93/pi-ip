@@ -29,8 +29,7 @@ function writeAuth(auth) {
  */
 router.get('/', requireAuth, (req, res) => {
   const auth = readAuth();
-  if (!auth.apiKey) return res.json({ hasKey: false });
-  res.json({ hasKey: true, preview: auth.apiKey.slice(0, 8) });
+  res.json({ hasKey: !!auth.apiKey });
 });
 
 /**
